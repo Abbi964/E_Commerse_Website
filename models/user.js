@@ -2,12 +2,16 @@ const mongodb = require('mongodb')
 
 const getDB = require('../util/database').getDB;
 
+const Product = require('./product');
+const Order = require('./order');
+
 class User {
-  constructor(name, email, cart, id) {
+  constructor(name, email, cart, id, orders) {
     this.name = name;
     this.email = email;
     this.cart = cart;
     this._id = id;
+    this.orders = orders;
   }
 
   save() {
@@ -108,6 +112,46 @@ class User {
       { $set: { cart: updatedCart } }
     )
       .then(result => { console.log(result) })
+      .catch(err => console.log(err))
+  }
+
+  async createOrder(){
+    // getiing items array from cart
+    const db = getDB();
+    let productArr = [...this.cart.items];
+
+    // getting product info
+    let orderProductArr = await Promise.all(productArr.map(async(prod) =>{
+      let obj = await Product.findById(prod.productId)
+      console.log('this is obj here ------',obj)
+      return {...obj,quantity : prod.quantity}
+    }))
+    console.log('this is orderProducrArray',orderProductArr)
+
+    // making an order instense and saving it
+    let user = this
+    let order = new Order(orderProductArr)
+    return order.save()
+      .then(result =>{
+        // clearing cart of user
+        this.cart.items = [];
+        let updatedItemsArr = []
+        let updatedCart = { items : updatedItemsArr}
+        return db.collection('users').updateOne({_id : user._id},{$set : {cart : updatedCart}})
+          .then( result => {
+            return order
+          })
+      })
+      .catch(err => console.log(err))
+  }
+
+  getOrders(){
+    // fetching all orders
+    const db = getDB();
+    return db.collection('orders').find().toArray()
+      .then(orders =>{
+        return orders
+      })
       .catch(err => console.log(err))
   }
 }
