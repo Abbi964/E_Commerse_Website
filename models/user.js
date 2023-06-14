@@ -52,6 +52,26 @@ userSchema.methods.addToCart = function (product) {
 
 }
 
+userSchema.methods.deleteProductFromCart = function (prodId) {
+    // finding index of product to delete
+    let prodIndex = this.cart.items.findIndex(ele => {
+      return ele.productId.toString() === prodId.toString()
+    })
+
+    // now removing product from that index
+    let updatedItemsArray = [...this.cart.items]
+    updatedItemsArray.splice(prodIndex, 1);
+
+    let updatedCart = { items: updatedItemsArray }
+
+    // now updating the cart
+
+    this.cart = {...updatedCart}
+    return this.save()
+      .then(result => { console.log(result) })
+      .catch(err => console.log(err))
+  }
+
 module.exports = mongoose.model('User', userSchema);
 
 
@@ -128,49 +148,49 @@ module.exports = mongoose.model('User', userSchema);
 //       .catch(err => console.log(err))
 //   }
 
-  // getCart() {
-  //   const db = getDB();
+// getCart() {
+//   const db = getDB();
 
-  //   // first getting array of all the product ids from this.cart
-  //   let prodIdArr = this.cart.items.map(ele => {
-  //     return ele.productId
-  //   });
+//   // first getting array of all the product ids from this.cart
+//   let prodIdArr = this.cart.items.map(ele => {
+//     return ele.productId
+//   });
 
-  //   // now getting all the products from product collection with ids in prodIdArr
-  //   return db.collection('products').find({ _id: { $in: prodIdArr } }).toArray()
-  //     .then(products => {
-  //       return products.map(prod => {
-  //         return {
-  //           ...prod,
-  //           quantity: this.cart.items.find(i => {
-  //             return i.productId.toString() === prod._id.toString()
-  //           }).quantity
-  //         }
-  //       })
-  //     })
-  // }
-
-//   deleteProductFromCart(prodId) {
-//     // finding index of product to delete
-//     let prodIndex = this.cart.items.findIndex(ele => {
-//       return ele.productId.toString() === prodId.toString()
+//   // now getting all the products from product collection with ids in prodIdArr
+//   return db.collection('products').find({ _id: { $in: prodIdArr } }).toArray()
+//     .then(products => {
+//       return products.map(prod => {
+//         return {
+//           ...prod,
+//           quantity: this.cart.items.find(i => {
+//             return i.productId.toString() === prod._id.toString()
+//           }).quantity
+//         }
+//       })
 //     })
+// }
 
-//     // now removing product from that index
-//     let updatedItemsArray = [...this.cart.items]
-//     updatedItemsArray.splice(prodIndex, 1);
+// deleteProductFromCart(prodId) {
+//   // finding index of product to delete
+//   let prodIndex = this.cart.items.findIndex(ele => {
+//     return ele.productId.toString() === prodId.toString()
+//   })
 
-//     let updatedCart = { items: updatedItemsArray }
+//   // now removing product from that index
+//   let updatedItemsArray = [...this.cart.items]
+//   updatedItemsArray.splice(prodIndex, 1);
 
-//     // now updating the cart
-//     const db = getDB();
-//     return db.collection('users').updateOne(
-//       { _id: new mongodb.ObjectId(this._id) },
-//       { $set: { cart: updatedCart } }
-//     )
-//       .then(result => { console.log(result) })
-//       .catch(err => console.log(err))
-//   }
+//   let updatedCart = { items: updatedItemsArray }
+
+//   // now updating the cart
+//   const db = getDB();
+//   return db.collection('users').updateOne(
+//     { _id: new mongodb.ObjectId(this._id) },
+//     { $set: { cart: updatedCart } }
+//   )
+//     .then(result => { console.log(result) })
+//     .catch(err => console.log(err))
+// }
 
 //   async createOrder(){
 //     // getiing items array from cart
